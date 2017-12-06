@@ -1,0 +1,73 @@
+import pdb
+import numpy as np
+from helpers import normalize, blur
+
+def initialize_beliefs(grid):
+    height = len(grid)
+    width = len(grid[0])
+    area = height * width
+    belief_per_cell = 1.0 / area
+    beliefs = []
+    for i in range(height):
+        row = []
+        for j in range(width):
+            row.append(belief_per_cell)
+        beliefs.append(row)
+    return beliefs
+
+
+#I created a help funtion...to create my 1D array back to 2D
+def helper1Dto2D(l,n):
+    return [l[i:i+n] for i in xrange(0, len(l), n)]
+
+
+
+def sense(color, grid, beliefs, p_hit, p_miss):
+    new_belief1D = []
+    new_belief2D = []
+
+    height = len(beliefs)
+    width = len(beliefs[0])
+
+    # The first loop checks what and with what we want to multiply
+    # Afterwards we get the summation, which is the normalizer if I remember correctly...
+    
+    for value, theRow in enumerate(grid):       
+        for otherValues, OneCell in enumerate(theRow):
+            hit = (color == grid[value][otherValues])  #Conditional Flag
+           
+            #Multiple either by pHit or pMiss depending
+            new_belief1D.append(beliefs[value][otherValues] * (hit * p_hit + (1-hit) * p_miss))  
+             
+            new_belief2D = helper1Dto2D(new_belief1D,width)
+            summation = sum(new_belief1D)
+            
+        
+    #This loop is to devide each element of the inital_belief array by the normalizer    
+    #for (x,y), value in np.ndenumerate(belief2D):
+        
+    for value, theRow in enumerate(new_belief2D):
+        for otherValues, OneCell in enumerate(theRow):
+            new_belief2D[value][otherValues] = new_belief2D[value][otherValues]/summation
+
+    return new_belief2D
+
+#First loop is to go through "simple grid"
+#theRow is the entire row of elements in the list 
+#OneCell is each inidivdual cell...
+    
+    
+   #### I should be the height and J the width
+def move(dy, dx, beliefs, blurring):
+    height = len(beliefs)
+    width = len(beliefs[0])
+    new_G = [[0.0 for i in range(width)] for j in range(height)]
+    for i, row in enumerate(beliefs):
+        for j, cell in enumerate(row):
+           
+            new_i = (i + dy ) % height
+            new_j = (j + dx ) % width
+                           
+            #pdb.set_trace()  #Debugging thing
+            new_G[int(new_i)][int(new_j)] = cell  #Error given here 
+    return blur(new_G, blurring)
